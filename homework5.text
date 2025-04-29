@@ -1,0 +1,48 @@
+Task 1
+SELECT od.*,
+	(
+		SELECT o.customer_id from orders o 
+        WHERE od.order_id = o.id
+	)	AS customer_id
+FROM order_details od
+
+Task2
+SELECT * 
+FROM order_details
+WHERE order_id IN
+(SELECT id from orders where shipper_id=3)
+
+Task3
+SELECT order_id, AVG(quantity) AS avg_quantity
+FROM (select * from order_details od WHERE od.quantity > 10) AS temp_table
+GROUP BY order_id
+
+Task4
+WITH TemporalTable AS 
+(
+    SELECT order_id, quantity
+    FROM order_details 
+    WHERE quantity > 10
+)
+SELECT order_id, AVG(quantity) AS avg_quantity
+FROM TemporalTable
+GROUP BY order_id;
+
+Task5
+DROP FUNCTION IF EXISTS CalculateResult;
+DELIMITER //
+CREATE FUNCTION CalculateResult(a FLOAT, b FLOAT)
+RETURNS FLOAT
+DETERMINISTIC 
+BEGIN
+    DECLARE result FLOAT;    
+      IF b = 0 THEN 
+          RETURN NULL;
+      END IF;        
+    SET result = a / b;
+    RETURN result;
+END //
+DELIMITER ;
+
+SELECT order_id, quantity, CalculateResult(quantity, 4) 
+as calc_quantity from order_details
